@@ -11,6 +11,8 @@ if (NOT TARGET Y2KaoZNetwork)
 endif ()
 
 add_executable(${PROJECT_NAME} 
+  "src/Options.cpp"
+  "src/Options.hpp"
   "src/main.cpp"
 )
 
