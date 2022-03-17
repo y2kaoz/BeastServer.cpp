@@ -1,0 +1,15 @@
+{
+    "name": "Progressive Web App",
+    "short_name": "PWA",
+    "lang": "en",
+    "start_url": "/",
+    "display": "standalone",
+    "orientation": "landscape",
+    "theme_color": "#ffffff",
+    "background_color":"#ffffff",
+    "id": "/",
+    "icons":[
+        {"src":"app-icon.svg","type": "image/svg+xml", "sizes": "512x512", "purpose": "any"},
+        {"src":"app-icon.png","type": "image/png", "sizes": "512x512", "purpose": "maskable"}
+    ]
+}
