@@ -11,6 +11,7 @@ public:
   Options(int argc, char** argv);
   auto overrideConfig(int /*argc*/, char** /*argv*/) -> bool;
   [[nodiscard]] auto cfgFile() const noexcept -> const std::string&;
+  [[nodiscard]] auto appRoot() const -> std::filesystem::path;
   [[nodiscard]] auto docRoot() const -> std::filesystem::path;
   [[nodiscard]] auto threads() -> std::size_t;
   [[nodiscard]] auto endpoint() const -> boost::asio::ip::tcp::endpoint;
@@ -19,6 +20,7 @@ private:
   std::string cfgFile_{};
   std::string address_{"0.0.0.0"};
   int port_{DEFAULT_PORT};
+  std::string appRoot_{"./"};
   std::string docRoot_{"./"};
   int threads_{static_cast<int>(std::thread::hardware_concurrency())};
 };

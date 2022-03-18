@@ -33,6 +33,7 @@ Options::Options(int argc, char** argv) {
       ("network.address", po::value<std::string>(&address_)->default_value(address_), "Server's listening address.")
       ("network.port", po::value<int>(&port_)->default_value(port_), "Server's listening port.")
       ("server.threads", po::value<int>(&threads_)->default_value(threads_), "Server's threads.")
+      ("http.appRoot", po::value<std::string>(&appRoot_)->default_value(appRoot_), "Websocket app document root.")
       ("http.docRoot", po::value<std::string>(&docRoot_)->default_value(docRoot_), "Http document root.")
       ;
     // clang-format on
@@ -53,6 +54,7 @@ auto Options::overrideConfig(int argc, char** argv) -> bool {
     ("address", po::value<std::string>(&address_)->default_value(address_), "Server's listening address.")
     ("port", po::value<int>(&port_)->default_value(port_), "Server's listening port.")
     ("threads", po::value<int>(&threads_)->default_value(threads_), "Server's threads.")
+    ("appRoot", po::value<std::string>(&appRoot_)->default_value(appRoot_), "Websocket app document root.")
     ("docRoot", po::value<std::string>(&docRoot_)->default_value(docRoot_), "Http document root.")
     ;
   // clang-format on
@@ -76,6 +78,10 @@ auto Options::overrideConfig(int argc, char** argv) -> bool {
 
 auto Options::cfgFile() const noexcept -> const std::string& {
   return cfgFile_;
+}
+
+auto Options::appRoot() const -> std::filesystem::path {
+  return std::filesystem::canonical(appRoot_);
 }
 
 auto Options::docRoot() const -> std::filesystem::path {
