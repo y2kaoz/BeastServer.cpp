@@ -59,6 +59,7 @@
     messages.scrollTop = messages.scrollHeight - messages.clientHeight;
   };
   connect.onclick = function () {
+    if (ws) { alert("Already connected."); return; }
     ws = new WebSocket(uri.value);
     ws.onopen = function (ev) {
       showMessage("[connection opened]");
@@ -75,11 +76,12 @@
     };
   };
   disconnect.onclick = function () {
+    if (!ws) { alert("Not connected."); return; };
     ws.close();
     ws = null;
   };
   send.onclick = function () {
-    if (!ws) alert("Not connected.");
+    if (!ws) { alert("Not connected."); return; };
     ws.send(userName.value + ": " + sendMessage.value);
     sendMessage.value = "";
   };
