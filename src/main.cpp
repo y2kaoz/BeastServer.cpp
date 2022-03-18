@@ -5,11 +5,16 @@
 #include "Y2KaoZ/Network/Tcp/Http/WebSocket/WebSocketSessions.hpp"
 #include <boost/asio/signal_set.hpp>
 #include <boost/log/trivial.hpp>
+#include <gsl/pointers>
 #include <thread>
 
 class ChatWebSocketSessionHandler : public Y2KaoZ::Network::Tcp::Http::WebSocket::WebSocketSession::Handler {
 public:
   using WebSocketSession = Y2KaoZ::Network::Tcp::Http::WebSocket::WebSocketSession;
+
+  explicit ChatWebSocketSessionHandler(gsl::not_null<Options*> options) : options_{options} {
+  }
+
   void onHandler(gsl::not_null<WebSocketSession*> session, Ptr oldHandler, Ptr newHandler) final {
     BOOST_LOG_TRIVIAL(trace) << "WebSocket session '" << session << "' switched handler from '" << oldHandler
                              << "' to '" << newHandler << "'";
@@ -27,9 +32,19 @@ public:
     }
     return true;
   }
-  void onStart(gsl::not_null<WebSocketSession*> session) final {
+  void onStart(gsl::not_null<WebSocketSession*> session, const WebSocketSession::HttpRequest& req) final {
+    auto target = std::filesystem::weakly_canonical(req.target()).relative_path();
+    std::filesystem::path path = options_->appRoot() / target;
+    if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path)) {
+      BOOST_LOG_TRIVIAL(error) << "WebSocket session  '" << session << "' invalid path " << path << "";
+      auto closeReason =
+        boost::beast::websocket::close_reason(boost::beast::websocket::close_code::policy_error, "Invalid path");
+      session->close(closeReason);
+      return;
+    }
+
     if (session->isOpen() && sessions_.insert(session)) {
-      BOOST_LOG_TRIVIAL(trace) << "WebSocket session  '" << session << "' started.";
+      BOOST_LOG_TRIVIAL(trace) << "WebSocket session  '" << session << "' started in " << path << "";
     }
   }
   void onClose(gsl::not_null<WebSocketSession*> session) final {
@@ -48,6 +63,7 @@ public:
   }
 
 private:
+  Options* options_;
   Y2KaoZ::Network::Tcp::Http::WebSocket::WebSocketSessions sessions_{};
   void send(std::string message) {
     BOOST_LOG_TRIVIAL(trace) << "Server is sending '" << message << "' to all WebSocket sessions.";
@@ -86,7 +102,7 @@ auto main(int argc, char** argv) -> int {
       std::make_shared<Y2KaoZ::Network::Tcp::Http::AcceptorHandler>(
         options.docRoot(),
         std::make_shared<Y2KaoZ::Network::Tcp::Http::WebSocket::HttpSessionHandler>(
-          std::make_shared<ChatWebSocketSessionHandler>())))
+          std::make_shared<ChatWebSocketSessionHandler>(&options))))
       ->accept();
 
     std::vector<std::thread> threads;

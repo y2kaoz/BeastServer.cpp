@@ -66,12 +66,14 @@
     };
     ws.onclose = function (ev) {
       showMessage("[connection closed]");
+      ws = null;
     };
     ws.onmessage = function (ev) {
       showMessage(ev.data);
     };
     ws.onerror = function (ev) {
       showMessage("[error]");
+      ws = null;
       console.log(ev);
     };
   };
