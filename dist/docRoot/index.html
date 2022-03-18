@@ -2,32 +2,93 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Progressive Web App Skeleton.">
-    <meta name="theme-color" content="#ffffff" />
-    <link rel="manifest" href="index.webmanifest">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    <link rel="stylesheet" href="css/normalize.css">
-    <title>Progressive Web App</title>
-    <script>
-        if ('serviceWorker' in navigator)
-            window.addEventListener('load', () =>
-                navigator.serviceWorker.register('ServiceWorker.js').then(() =>
-                    console.log("ServiceWorker registered.")));
-    </script>
-    <script src="js/main.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Progressive Web App Skeleton.">
+  <meta name="theme-color" content="#ffffff" />
+  <link rel="manifest" href="index.webmanifest">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="stylesheet" href="css/normalize.css">
+  <title>Progressive Web App</title>
+  <script>
+    if ('serviceWorker' in navigator)
+      window.addEventListener('load', () =>
+        navigator.serviceWorker.register('ServiceWorker.js').then(() =>
+          console.log("ServiceWorker registered.")));
+  </script>
+  <script src="js/main.js"></script>
 </head>
 
-<body>
-    <header>
-        <nav></nav>
-    </header>
-    <main>
-        <h1>Progressive Web App</h1>
-    </main>
-    <aside></aside>
-    <footer></footer>
+<body style="display:flex; flex-direction:column; min-height:100vh; margin:0;">
+  <header style="max-width: 100vh; width:95%; margin:auto;">
+    <h1>Chat App</h1>
+    <ul style="list-style: none; width:100%; margin:0; padding:0;">
+      <li style="display: flex; padding:.5rem;">
+        <label style="width:12ch;" for="uri">Server URI:</label>
+        <input style="flex:1;" id="uri" value="ws://localhost:8080">
+      </li>
+      <li style="display: flex; padding:.5rem;">
+        <label style="width:12ch;" for="userName">Your Name:</label>
+        <input style="flex:1;" id="userName" style="margin-bottom: 5px;">
+      </li>
+      <li style="display: flex; padding:.5rem;">
+        <button style="padding:.25rem 1rem; margin-left:auto;" id="connect">Connect</button>
+        <button style="padding:.25rem 1rem; margin-left:1rem;" id="disconnect">Disconnect</button>
+      </li>
+    </ul>
+  </header>
+  <main style="flex:1; display: flex; flex-direction:column; max-width: 100vh; margin:auto; width:95%;">
+    <div style="flex:1; position: relative;">
+      <pre id="messages"
+        style="padding:1rem;position: absolute; top:0;left:0;right:0;bottom:0; white-space: normal; overflow: auto; border: solid 1px #ddd;">
+      </pre>
+    </div>
+    <div style="display: flex; padding:.5rem;">
+      <input style="flex:1;" id="sendMessage" value="">
+      <button style="padding:.25rem 1rem;margin-left:1rem;" id="send">Send</button>
+    </div>
+  </main>
+  <aside></aside>
+  <footer></footer>
 </body>
+
+<script>
+  var ws = null;
+  function showMessage(msg) {
+    messages.innerText += msg + "\n";
+    messages.scrollTop = messages.scrollHeight - messages.clientHeight;
+  };
+  connect.onclick = function () {
+    ws = new WebSocket(uri.value);
+    ws.onopen = function (ev) {
+      showMessage("[connection opened]");
+    };
+    ws.onclose = function (ev) {
+      showMessage("[connection closed]");
+    };
+    ws.onmessage = function (ev) {
+      showMessage(ev.data);
+    };
+    ws.onerror = function (ev) {
+      showMessage("[error]");
+      console.log(ev);
+    };
+  };
+  disconnect.onclick = function () {
+    ws.close();
+    ws = null;
+  };
+  send.onclick = function () {
+    if (!ws) alert("Not connected.");
+    ws.send(userName.value + ": " + sendMessage.value);
+    sendMessage.value = "";
+  };
+  sendMessage.onkeyup = function (ev) {
+    ev.preventDefault();
+    if (ev.keyCode === 13) {
+      send.click();
+    }
+  }
+</script>
 
 </html>
